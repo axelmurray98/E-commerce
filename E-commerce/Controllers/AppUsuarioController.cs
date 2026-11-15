@@ -1,0 +1,64 @@
+using E_commerce.Data;
+using E_commerce.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace E_commerce.Controllers
+{
+    public class AppUsuarioController : Controller
+    {
+        private readonly UserManager<AppUsuario> _userManager;
+        private readonly AppDbContext _context;
+
+        public AppUsuarioController(UserManager<AppUsuario> userManager, AppDbContext context)
+        {
+            _userManager = userManager;
+            _context = context;
+        }
+
+        // GET: AppUsuario
+        public async Task<IActionResult> Index()
+        {
+            var adminEmail = "Admin@Admin.com";
+
+            var usuarios = await _context.Users
+                .Where(u => u.Email != adminEmail)
+                .Select(u => new UsuarioVm
+                {
+                    Id = u.Id,
+                    Nombre = u.Nombre,
+                    Apellido = u.Apellido,
+                    Email = u.Email,
+                    FecheRegistro = u.FechaRegistro,
+                    IsAdmin = _context.UserRoles.Any(ur =>
+                        ur.UserId == u.Id &&
+                        _context.Roles.Any(r => r.Id == ur.RoleId && r.Name == "Admin"))
+                })
+                .ToListAsync();
+
+            return View(usuarios);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarRol(string? id)
+        {
+            var usuario = await _userManager.FindByIdAsync(id);
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+            if (await _userManager.IsInRoleAsync(usuario, "Admin"))
+            {
+                await _userManager.RemoveFromRoleAsync(usuario, "Admin");
+                await _userManager.AddToRoleAsync(usuario, "Cliente");
+            }
+            else
+            {
+                await _userManager.RemoveFromRoleAsync(usuario, "Cliente");
+                await _userManager.AddToRoleAsync(usuario, "Admin");
+            }
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

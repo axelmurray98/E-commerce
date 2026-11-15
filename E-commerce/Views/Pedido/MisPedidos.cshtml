@@ -1,0 +1,43 @@
+﻿@model List<E_commerce.Models.Pedido>
+@{
+    ViewData["Title"] = "Mis pedidos";
+    var ar = new System.Globalization.CultureInfo("es-AR");
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Mis pedidos</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Todavía no hiciste ningún pedido.
+            <a asp-controller="Producto" asp-action="Index">Ver productos</a>
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>N°</th>
+                    <th>Envío a</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>#@p.PedidoId</td>
+                        <td>@p.Calle @p.Numero, @p.Ciudad</td>
+                        <td>@p.Total.ToString("C2", ar)</td>
+                        <td>
+                            <a asp-action="Detalle" asp-route-id="@p.PedidoId" class="btn btn-sm btn-info">Ver</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

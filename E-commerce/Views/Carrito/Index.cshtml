@@ -1,0 +1,99 @@
+@model E_commerce.Models.Carrito
+@{
+    ViewData["Title"] = "Mi carrito";
+    var ar = new System.Globalization.CultureInfo("es-AR");
+    var total = Model.Detalles.Sum(d => d.Cantidad * d.Producto.Precio);
+}
+
+@* AVISO FLOTANTE (desaparece a los 2 segundos) *@
+@if (TempData["Ok"] != null || TempData["Error"] != null)
+{
+    <div id="toastAviso"
+         class="alert @(TempData["Error"] != null ? "alert-danger" : "alert-success") shadow position-fixed top-0 start-50 translate-middle-x mt-3"
+         style="z-index:2000; min-width:300px; transition: opacity .4s;"
+         role="alert">
+        @(TempData["Error"] ?? TempData["Ok"])
+    </div>
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">Mi carrito</h2>
+
+    @if (!Model.Detalles.Any())
+    {
+        <div class="alert alert-info">
+            Tu carrito está vacío.
+            <a asp-controller="Producto" asp-action="Index">Ver productos</a>
+        </div>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th style="width:160px;">Cantidad</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Detalles)
+                {
+                    <tr>
+                        <td>
+                            <img src="@(string.IsNullOrEmpty(d.Producto.ImagenUrl) ? "/img-productos/no-img.png" : d.Producto.ImagenUrl)"
+                                 style="width:50px; height:50px; object-fit:cover;" class="me-2 rounded" />
+                            @d.Producto.Nombre
+                        </td>
+                        <td>@d.Producto.Precio.ToString("C2", ar)</td>
+                        <td>
+                            <form asp-action="Actualizar" method="post" class="d-flex gap-1">
+                                <input type="hidden" name="detalleId" value="@d.CarritoDetalleId" />
+                                <input type="number" name="cantidad" value="@d.Cantidad"
+                                       min="0" max="@d.Producto.Stock" class="form-control form-control-sm" />
+                                <button class="btn btn-sm btn-outline-primary">OK</button>
+                            </form>
+                        </td>
+                        <td>@((d.Cantidad * d.Producto.Precio).ToString("C2", ar))</td>
+                        <td>
+                            <form asp-action="Quitar" method="post">
+                                <input type="hidden" name="detalleId" value="@d.CarritoDetalleId" />
+                                <button class="btn btn-sm btn-danger">Quitar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Total</th>
+                    <th colspan="2" class="text-success fs-5">@total.ToString("C2", ar)</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="d-flex justify-content-between">
+            <form asp-action="Vaciar" method="post">
+                <button class="btn btn-outline-secondary">Vaciar carrito</button>
+            </form>
+            <a asp-controller="Producto" asp-action="Index" class="btn btn-outline-primary">Seguir comprando</a>
+            <a asp-controller="Pedido" asp-action="Checkout" class="btn btn-success">Finalizar compra</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const aviso = document.getElementById('toastAviso');
+        if (aviso) {
+            const duracion = aviso.classList.contains('alert-danger') ? 4000 : 2000;
+            setTimeout(function () {
+                aviso.style.opacity = '0';
+                setTimeout(function () { aviso.remove(); }, 400);
+            }, duracion);
+        }
+    </script>
+}

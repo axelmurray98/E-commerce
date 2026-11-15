@@ -1,0 +1,194 @@
+﻿@model Producto
+@{
+    ViewData["Title"] = "Editando " + Model.Nombre;
+}
+
+<style>
+    .edit-min {
+        max-width: 980px;
+    }
+
+        .edit-min .form-control, .edit-min .form-select {
+            border: 1px solid #e5e7eb;
+            border-radius: .5rem;
+            box-shadow: none;
+        }
+
+            .edit-min .form-control:focus, .edit-min .form-select:focus {
+                border-color: #4338ca;
+            }
+
+        .edit-min .form-label {
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: #6b7280;
+            margin-bottom: .25rem;
+        }
+
+        .edit-min .panel {
+            border: 1px solid #e5e7eb;
+            border-radius: .75rem;
+            background: #fff;
+            padding: 1.5rem;
+        }
+
+        .edit-min .preview {
+            width: 100%;
+            max-height: 240px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+            border-radius: .75rem;
+            padding: .5rem;
+        }
+</style>
+
+<div class="container edit-min mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0" style="font-weight:600">Editar producto</h4>
+        <a asp-action="PanelproductoAdmin" class="btn btn-sm btn-outline-secondary">← Volver</a>
+    </div>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <input asp-for="IdProducto" type="hidden" />
+        <input asp-for="ImagenUrl" type="hidden" />
+
+        <div class="panel">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row g-4">
+
+                <!-- FORMULARIO -->
+                <div class="col-lg-8">
+
+                    <div class="mb-3">
+                        <label asp-for="Nombre" class="form-label"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descripcion" class="form-label"></label>
+                        <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Descripcion" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SKU" class="form-label"></label>
+                            <input asp-for="SKU" class="form-control" />
+                            <span asp-validation-for="SKU" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Stock" class="form-label"></label>
+                            <input asp-for="Stock" class="form-control" />
+                            <span asp-validation-for="Stock" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Costo" class="form-label"></label>
+                            <input asp-for="Costo" class="form-control" />
+                            <span asp-validation-for="Costo" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Precio" class="form-label"></label>
+                            <input asp-for="Precio" class="form-control" />
+                            <span asp-validation-for="Precio" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MarcaId" class="form-label"></label>
+                            <select asp-for="MarcaId" asp-items="ViewBag.Marcas" class="form-select">
+                                <option value="">Seleccione una marca</option>
+                            </select>
+                            <span asp-validation-for="MarcaId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="CategoriaId" class="form-label"></label>
+                            <select asp-for="CategoriaId" asp-items="ViewBag.Categorias" class="form-select">
+                                <option value="">Seleccione una categoría</option>
+                            </select>
+                            <span asp-validation-for="CategoriaId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Reemplazar imagen</label>
+                        <input type="file" id="imagen" name="imagen" class="form-control" accept="image/*" />
+                    </div>
+
+                </div>
+
+                <!-- PREVIEW -->
+                <div class="col-lg-4">
+
+                    <img id="previewImagen" class="preview"
+                         src="@(string.IsNullOrEmpty(Model.ImagenUrl) ? "/img-productos/no-img.png" : Model.ImagenUrl)" />
+                    <p class="text-muted small text-center mt-2">Imagen actual</p>
+
+                    <input type="hidden" id="EliminarImagen" name="EliminarImagen" value="false" />
+                    <button type="button" id="btnEliminarImagen"
+                            class="btn btn-sm btn-outline-danger w-100 mb-3">
+                        Eliminar imagen actual
+                    </button>
+
+                    <div class="form-check form-switch mb-4">
+                        <input asp-for="Activo" class="form-check-input" />
+                        <label asp-for="Activo" class="form-check-label"></label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark">Guardar cambios</button>
+                        <a asp-action="PanelproductoAdmin" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Acepta coma o punto como separador decimal
+        $.validator.methods.number = function (value, element) {
+            return this.optional(element) || /^-?\d+(?:[.,]\d+)?$/.test(value);
+        };
+        $.validator.methods.range = function (value, element, param) {
+            var v = parseFloat(String(value).replace(',', '.'));
+            return this.optional(element) || (v >= param[0] && v <= param[1]);
+        };
+    </script>
+    <script>
+        const btnEliminarImagen = document.getElementById('btnEliminarImagen');
+        const previewImagen = document.getElementById('previewImagen');
+        const eliminarImagen = document.getElementById('EliminarImagen');
+
+        btnEliminarImagen.addEventListener('click', function () {
+            previewImagen.src = '/img-productos/no-img.png';
+            eliminarImagen.value = "true";
+            btnEliminarImagen.innerText = 'Imagen marcada para eliminar';
+            btnEliminarImagen.classList.remove('btn-outline-danger');
+            btnEliminarImagen.classList.add('btn-danger');
+        });
+
+        document.getElementById('imagen').addEventListener('change', function (e) {
+            const archivo = e.target.files[0];
+            if (archivo) {
+                previewImagen.src = URL.createObjectURL(archivo);
+                eliminarImagen.value = "false";
+                btnEliminarImagen.innerText = 'Eliminar imagen actual';
+                btnEliminarImagen.classList.remove('btn-danger');
+                btnEliminarImagen.classList.add('btn-outline-danger');
+            }
+        });
+    </script>
+}

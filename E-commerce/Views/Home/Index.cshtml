@@ -1,0 +1,133 @@
+﻿@model List<E_commerce.Models.HomeCategoriaVm>
+@{
+    ViewData["Title"] = "Inicio";
+    var ar = new System.Globalization.CultureInfo("es-AR");
+    var items = Model
+        .SelectMany(c => c.Productos.Select(p => new { Categoria = c, Producto = p }))
+        .ToList();
+}
+
+<style>
+    /* Alto disponible = pantalla - navbar (~57px) - footer (~50px). Ajustalo si ves scroll */
+    .home-wrap {
+        height: calc(100vh - 57px - 50px);
+        display: flex;
+        flex-direction: column;
+        padding-top: .75rem;
+        padding-bottom: .75rem;
+    }
+
+    .home-grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: .75rem;
+    }
+
+    .home-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        border-radius: .5rem;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        text-decoration: none;
+        color: inherit;
+        transition: box-shadow .2s, transform .2s;
+    }
+
+        .home-card:hover {
+            box-shadow: 0 .4rem .9rem rgba(0,0,0,.15);
+            transform: translateY(-2px);
+            color: inherit;
+        }
+
+        .home-card img {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .home-card .badge-cat {
+            position: absolute;
+            top: .4rem;
+            left: .4rem;
+            background: rgba(33,37,41,.85);
+            color: #fff;
+            font-size: .7rem;
+            padding: .15rem .5rem;
+            border-radius: 1rem;
+        }
+
+        .home-card .info {
+            padding: .4rem .6rem;
+            line-height: 1.25;
+        }
+
+        .home-card .nombre {
+            display: block;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    @@media (max-width: 991px) {
+        .home-wrap {
+            height: auto;
+        }
+
+        .home-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: none;
+        }
+
+        .home-card {
+            height: 240px;
+        }
+    }
+</style>
+
+<div class="container-fluid px-4 home-wrap">
+
+    <div class="mb-2 text-end">
+        <a asp-controller="Producto" asp-action="Index" class="btn btn-primary btn-sm">
+            Ver todos los productos
+        </a>
+    </div>
+
+    @if (!items.Any())
+    {
+        <div class="alert alert-info">Todavía no hay productos disponibles.</div>
+    }
+    else
+    {
+        <div class="home-grid">
+            @foreach (var it in items)
+            {
+                <a class="home-card"
+                   asp-controller="Producto" asp-action="Details"
+                   asp-route-id="@it.Producto.IdProducto">
+
+                    <span class="badge-cat">@it.Categoria.Nombre</span>
+
+                    <img src="@(string.IsNullOrEmpty(it.Producto.ImagenUrl)
+                         ? "/img-productos/no-img.png"
+                         : it.Producto.ImagenUrl)"
+                         alt="@it.Producto.Nombre" />
+
+                    <div class="info">
+                        <span class="nombre">@it.Producto.Nombre</span>
+                        <small class="text-muted">@it.Producto.Marca?.Nombre</small>
+                        <div class="text-success fw-bold">@it.Producto.Precio.ToString("C2", ar)</div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>

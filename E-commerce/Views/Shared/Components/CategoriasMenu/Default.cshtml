@@ -1,0 +1,30 @@
+﻿@model IEnumerable<E_commerce.Models.CategoriaMenuVm>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle"
+       href="#"
+       role="button"
+       data-bs-toggle="dropdown"
+       aria-expanded="false">
+        Categorías
+    </a>
+
+    <ul class="dropdown-menu" style="max-height: 300px; overflow-y: auto;">
+        @if (!Model.Any())
+        {
+            <li><span class="dropdown-item-text text-muted">Sin categorías</span></li>
+        }
+
+        @foreach (var categoria in Model)
+        {
+            <li>
+                <a class="dropdown-item"
+                   asp-controller="Producto"
+                   asp-action="Index"
+                   asp-route-categoriaId="@categoria.IdCategoria">
+                    @categoria.Nombre
+                </a>
+            </li>
+        }
+    </ul>
+</li>

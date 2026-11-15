@@ -1,0 +1,220 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppUsuario> SignInManager
+@inject UserManager<AppUsuario> UserManager
+@using E_commerce.Models
+@inject UserManager<AppUsuario> UserManager
+
+@{
+    var usuario = await UserManager.GetUserAsync(User);
+
+    var nombreCompleto = $"{usuario?.Nombre} {usuario?.Apellido}".Trim();
+    var nombreMostrar = !string.IsNullOrWhiteSpace(nombreCompleto)
+        ? nombreCompleto
+        : User.Identity?.Name;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ComprasYa!</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/E_commerce.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+
+        <nav class="navbar navbar-expand-lg navbar-dark nav-main sticky-top">
+
+            <div class="container-fluid px-4">
+
+                <!-- LOGO -->
+                <a class="navbar-brand"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    Compras<span>Ya!</span>
+                </a>
+
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarMain"
+                        aria-controls="navbarMain"
+                        aria-expanded="false"
+                        aria-label="Menú">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMain">
+
+                    <!-- CATEGORIAS -->
+                    <ul class="navbar-nav me-3">
+                        @await Component.InvokeAsync("CategoriasMenu")
+                    </ul>
+
+                    <!-- BUSCADOR -->
+                    <form asp-controller="Producto"
+                          asp-action="Index"
+                          method="get"
+                          class="d-flex nav-search mx-lg-auto my-2 my-lg-0">
+
+                        <input type="text"
+                               name="buscar"
+                               class="form-control"
+                               placeholder="Buscar productos..." />
+
+                        <button class="btn" type="submit">Buscar</button>
+
+                    </form>
+
+                    <div class="d-flex align-items-center gap-3 ms-lg-3 mt-2 mt-lg-0">
+
+                        <!-- CARRITO -->
+                        @await Component.InvokeAsync("CarritoMenu")
+
+                        <!-- USUARIO -->
+                        <ul class="navbar-nav">
+
+                            @if (User.Identity?.IsAuthenticated ?? false)
+                            {
+                                <li class="nav-item dropdown">
+
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        <span class="user-avatar">
+                                            @((nombreMostrar ?? "?").Substring(0, 1).ToUpper())
+                                        </span>
+                                        @nombreMostrar
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-end">
+
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <li><h6 class="dropdown-header">Administración</h6></li>
+
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   asp-controller="Pedido"
+                                                   asp-action="Admin">
+                                                    Pedidos
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   asp-controller="Producto"
+                                                   asp-action="Create">
+                                                    Crear producto
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   asp-controller="Producto"
+                                                   asp-action="PanelproductoAdmin">
+                                                    Panel de productos
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   asp-controller="Categoria"
+                                                   asp-action="Index">
+                                                    Categorías
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   asp-controller="Marca"
+                                                   asp-action="Index">
+                                                    Marcas
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   asp-controller="AppUsuario"
+                                                   asp-action="Index">
+                                                    Usuarios y roles
+                                                </a>
+                                            </li>
+
+                                            <li><hr class="dropdown-divider" /></li>
+                                        }
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="Perfil"
+                                               asp-action="Index">
+                                                Mi perfil
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="Pedido"
+                                               asp-action="MisPedidos">
+                                                Mis pedidos
+                                            </a>
+                                        </li>
+
+                                        <li><hr class="dropdown-divider" /></li>
+
+                                        <li>
+                                            <form asp-area="Identity"
+                                                  asp-page="/Account/Logout"
+                                                  method="post">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    Cerrar sesión
+                                                </button>
+                                            </form>
+                                        </li>
+
+                                    </ul>
+
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="btn btn-login"
+                                       asp-area="Identity"
+                                       asp-page="/Account/Login">
+                                        Iniciar sesión
+                                    </a>
+                                </li>
+                            }
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - ComprasYa!<a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

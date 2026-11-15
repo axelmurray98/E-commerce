@@ -1,0 +1,111 @@
+﻿@model E_commerce.Models.Producto
+@{
+    ViewData["Title"] = Model.Nombre;
+    var ar = new System.Globalization.CultureInfo("es-AR");
+    var logueado = User.Identity?.IsAuthenticated ?? false;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+@* AVISO FLOTANTE (desaparece a los 2 segundos) *@
+@if (TempData["Ok"] != null || TempData["Error"] != null)
+{
+    <div id="toastAviso"
+         class="alert @(TempData["Error"] != null ? "alert-danger" : "alert-success") shadow position-fixed top-0 start-50 translate-middle-x mt-3"
+         style="z-index:2000; min-width:300px; transition: opacity .4s;"
+         role="alert">
+        @(TempData["Error"] ?? TempData["Ok"])
+    </div>
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <!--Imagen-->
+                <div class="col-md-6 text-center">
+                    <img src="@(string.IsNullOrEmpty(Model.ImagenUrl)
+                         ? "/img-productos/no-img.png"
+                         : Model.ImagenUrl)"
+                         class="img-fluid rounded"
+                         alt="@Model.Nombre" />
+                </div>
+                <!--Informacion-->
+                <div class="col-md-6">
+                    <h2>@Model.Nombre</h2>
+                    <p class="text-muted">Marca: @Model.Marca?.Nombre</p>
+                    <p class="text-muted">Categoría: @Model.Categoria?.Nombre</p>
+                    <p>
+                        <strong>Stock: @Model.Stock</strong>
+                    </p>
+                    <h3 class="text-success">Precio: @Model.Precio.ToString("C2", ar)</h3>
+                    @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+                    {
+                        <hr />
+                        <h5>Descripción</h5>
+                        <p>@Model.Descripcion</p>
+                    }
+                    <hr />
+
+                    <div class="d-flex flex-column align-items-center mt-4">
+
+                        @if (Model.Stock <= 0)
+                        {
+                            <button class="btn btn-secondary btn-lg w-50" disabled>Sin stock</button>
+                        }
+                        else if (!logueado)
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login"
+                               asp-route-returnUrl="@returnUrl"
+                               class="btn btn-primary btn-lg w-50">
+                                Iniciá sesión para comprar
+                            </a>
+                        }
+                        else
+                        {
+                            @* Un solo formulario: la cantidad vale para ambos botones *@
+                            <form method="post" class="w-50">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productoId" value="@Model.IdProducto" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Cantidad</span>
+                                    <input type="number" name="cantidad" value="1"
+                                           min="1" max="@Model.Stock" class="form-control" />
+                                    <span class="input-group-text">de @Model.Stock</span>
+                                </div>
+
+                                <button type="submit"
+                                        asp-controller="Carrito" asp-action="ComprarAhora"
+                                        class="btn btn-primary btn-lg w-100">
+                                    Comprar ahora
+                                </button>
+
+                                <button type="submit"
+                                        asp-controller="Carrito" asp-action="Agregar"
+                                        class="btn btn-outline-primary btn-lg w-100 mt-2">
+                                    Agregar al carrito
+                                </button>
+                            </form>
+                        }
+
+                        <a asp-action="Index" class="btn btn-link mt-3">Volver a productos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const aviso = document.getElementById('toastAviso');
+        if (aviso) {
+            const duracion = aviso.classList.contains('alert-danger') ? 4000 : 2000;
+            setTimeout(function () {
+                aviso.style.opacity = '0';
+                setTimeout(function () { aviso.remove(); }, 400);
+            }, duracion);
+        }
+    </script>
+}

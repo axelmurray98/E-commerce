@@ -1,0 +1,83 @@
+﻿@model IEnumerable<E_commerce.Models.UsuarioVm>
+@{
+    ViewBag.title = "Panel Usuarios";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h3>Administracion de Usuarios</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>E-Mail</th>
+                        <th>Rol</th>
+                        <th>Registro</th>
+                        <th>Acciones</th>
+
+
+                    </tr>
+
+
+
+                </thead>
+                <tbody>
+                    @foreach(var usuarios in Model)
+                    {
+                        <tr>
+                            <td>@usuarios.Nombre @usuarios.Apellido</td>
+                            <td>@usuarios.Email</td>
+                            <td>
+                                @if (usuarios.IsAdmin)
+                                {
+                                    <span class="badge bg-danger">
+                                        Admin
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">
+                                        Cliente
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @usuarios.FecheRegistro.ToShortDateString()
+                            </td>
+                            <td>
+
+                                <form asp-action="CambiarRol"
+                                      asp-route-id="@usuarios.Id"
+                                      method="post"
+                                      class="d-inline">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn @(usuarios.IsAdmin ? "btn-warning" : "btn-success") btn-sm">
+
+                                        @(usuarios.IsAdmin
+                                            ? "Quitar Admin"
+                                            : "Hacer Admin")
+
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+
+                        </tr>
+                    }
+                </tbody>
+
+
+
+
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,373 @@
+﻿@model IEnumerable<E_commerce.Models.Marca>
+@{
+    ViewData["Title"] = "Marcas";
+}
+<div class="container mt-4">
+
+    <div class="row mb-3">
+
+        <div class="col">
+            <h2>Marcas</h2>
+        </div>
+
+        <div class="col text-end">
+            <button class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#createModal">
+                Crear Marca
+            </button>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <table class="table table-hover table-striped align-middle">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model.Any())
+                    {
+                        @foreach (var marca in Model)
+                        {
+                            <tr>
+
+                                <td>@marca.Nombre</td>
+
+                                <td>
+                                    @if (marca.Activo)
+                                    {
+                                        <span class="badge bg-success">
+                                            Activa
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Inactiva
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+
+                                    <button class="btn btn-warning btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editModal"
+                                            data-id="@marca.IdMarca"
+                                            data-nombre="@marca.Nombre"
+                                            data-activo="@marca.Activo">
+                                        Editar
+                                    </button>
+
+                                    <button class="btn btn-danger btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal"
+                                            data-id="@marca.IdMarca"
+                                            data-nombre="@marca.Nombre">
+                                        Eliminar
+                                    </button>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                No hay marcas registradas.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL CREATE -->
+
+    <div class="modal fade"
+         id="createModal"
+         tabindex="-1"
+         aria-hidden="true">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Nueva Marca
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <form asp-action="Create" method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nombre
+                            </label>
+
+                            <input class="form-control"
+                                   name="Nombre"
+                                   minlength="3"
+                                   maxlength="30"
+                                   required
+                                   placeholder="Ingrese la marca" />
+
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+
+                            <input id="createActivo"
+                                   name="Activo"
+                                   type="checkbox"
+                                   value="true"
+                                   class="form-check-input"
+                                   role="switch"
+                                   checked />
+                            <label class="form-check-label" for="createActivo">Activo</label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-success">
+                            Guardar
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL EDIT -->
+
+    <div class="modal fade"
+         id="editModal"
+         tabindex="-1"
+         aria-hidden="true">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <form asp-action="Edit" method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           id="editId"
+                           name="IdMarca" />
+
+                    <div class="modal-header">
+
+                        <h5 class="modal-title">
+                            Editar Marca
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nombre
+                            </label>
+
+                            <input id="editNombre"
+                                   class="form-control"
+                                   name="Nombre"
+                                   minlength="3"
+                                   maxlength="30"
+                                   required />
+
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+
+                            <input id="editActivo"
+                                   name="Activo"
+                                   type="checkbox"
+                                   value="true"
+                                   class="form-check-input" role="switch" />
+
+                            <label class="form-check-label"
+                                   for="editActivo">
+                                Activo
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-warning">
+                            Guardar cambios
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL DELETE -->
+
+    <div class="modal fade"
+         id="deleteModal"
+         tabindex="-1"
+         aria-hidden="true">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <form asp-action="Delete" method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           id="deleteId"
+                           name="id" />
+
+                    <div class="modal-header">
+
+                        <h5 class="modal-title">
+                            Eliminar Marca
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                    <div class="modal-body">
+
+                        ¿Desea eliminar la marca
+                        <strong id="deleteNombre"></strong>?
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-danger">
+                            Eliminar
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+
+        const editModal =
+            document.getElementById('editModal');
+
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            document.getElementById('editId').value =
+                button.getAttribute('data-id');
+
+            document.getElementById('editNombre').value =
+                button.getAttribute('data-nombre');
+
+            document.getElementById('editActivo').checked =
+                button.getAttribute('data-activo') === 'True';
+        });
+
+        const deleteModal =
+            document.getElementById('deleteModal');
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            document.getElementById('deleteId').value =
+                button.getAttribute('data-id');
+
+            document.getElementById('deleteNombre').textContent =
+                button.getAttribute('data-nombre');
+        });
+
+    </script>
+}

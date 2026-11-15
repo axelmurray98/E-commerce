@@ -1,0 +1,105 @@
+﻿@model IEnumerable<E_commerce.Models.Producto>
+@{
+    var categoriaNombre = ViewBag.CategoriaNombre as string;
+    var textoBuscado = ViewBag.Buscar as string;
+    var hayFiltro = !string.IsNullOrEmpty(categoriaNombre);
+    var hayBusqueda = !string.IsNullOrEmpty(textoBuscado);
+
+    ViewBag.Title = hayFiltro ? categoriaNombre
+                  : hayBusqueda ? $"Búsqueda: {textoBuscado}"
+                  : "Productos";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            @if (hayFiltro)
+            {
+                <text>Productos: @categoriaNombre</text>
+            }
+            else if (hayBusqueda)
+            {
+                <text>Resultados para "@textoBuscado"</text>
+            }
+            else
+            {
+                <text>Productos</text>
+            }
+        </h2>
+
+        <div class="d-flex gap-2">
+            @if (hayFiltro || hayBusqueda)
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">Ver todos</a>
+            }
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Create" class="btn btn-primary">Crear Producto</a>
+            }
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            @if (hayBusqueda)
+            {
+                <text>No se encontraron productos para "<strong>@textoBuscado</strong>".</text>
+            }
+            else if (hayFiltro)
+            {
+                <text>No hay productos en esta categoría.</text>
+            }
+            else
+            {
+                <text>No hay productos disponibles.</text>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var producto in Model)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+
+                    <div class="card h-100 shadow-sm">
+                        <a asp-action="Details" asp-route-id="@producto.IdProducto" class="text-decoration-none text-dark">
+                            <img src="@(string.IsNullOrEmpty(producto.ImagenUrl)
+                                 ? "/img-productos/no-img.png"
+                                 : producto.ImagenUrl)"
+                                 class="card-img-top"
+                                 style="height:180px; object-fit:cover;"
+                                 alt="@producto.Nombre" />
+
+                            <div class="card-body">
+
+                                <h5 class="text-muted d-block">
+                                    @producto.Nombre
+                                </h5>
+
+                                <p class="text-muted d-block">
+                                    <strong>Marca:</strong> @producto.Marca?.Nombre
+                                </p>
+
+                                <p class="text-muted d-block">
+                                    <strong>Categoría:</strong> @producto.Categoria?.Nombre
+                                </p>
+
+                                <p class="text-muted d-block">
+                                    <strong>Stock:</strong> @producto.Stock
+                                </p>
+
+                                <h4 class="text-success mt-2">
+                                    $@producto.Precio
+                                </h4>
+
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+</div>

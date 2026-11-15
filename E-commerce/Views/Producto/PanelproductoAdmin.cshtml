@@ -1,0 +1,217 @@
+﻿@model List<E_commerce.Models.Producto>
+@{
+    ViewData["Title"] = "Panel de Productos";
+
+    int pagina = (int?)ViewBag.Pagina ?? 1;
+    int totalPaginas = (int?)ViewBag.TotalPaginas ?? 1;
+    string? buscar = ViewBag.Buscar as string;
+    int? marcaId = (int?)ViewBag.MarcaId;
+    int? categoriaId = (int?)ViewBag.CategoriaId;
+}
+
+@if (TempData["Ok"] != null || TempData["Error"] != null)
+{
+    <div id="toastAviso"
+         class="alert @(TempData["Error"] != null ? "alert-danger" : "alert-success") shadow position-fixed top-0 start-50 translate-middle-x mt-3"
+         style="z-index:2000; min-width:300px; transition: opacity .4s;"
+         role="alert">
+        @(TempData["Error"] ?? TempData["Ok"])
+    </div>
+}
+
+<div class="container mt-4">
+
+    <!-- TITULO + NUEVO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Panel de productos</h2>
+        <a asp-action="Create" class="btn btn-success">Nuevo Producto</a>
+    </div>
+
+    <!-- FILTROS -->
+    <form asp-action="PanelproductoAdmin" method="get" class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <input type="text"
+                   name="buscar"
+                   value="@buscar"
+                   class="form-control"
+                   placeholder="Buscar producto..." />
+        </div>
+
+        <div class="col-md-3">
+            <select name="marcaId"
+                    class="form-select"
+                    asp-items="ViewBag.Marcas">
+                <option value="">Todas las marcas</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select name="categoriaId"
+                    class="form-select"
+                    asp-items="ViewBag.Categorias">
+                <option value="">Todas las categorías</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No se encontraron productos.</div>
+    }
+    else
+    {
+        @foreach (var p in Model)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+
+                        <!-- IMAGEN -->
+                        <div class="col-md-2 text-center">
+                            <img src="@(string.IsNullOrEmpty(p.ImagenUrl) ? "/img-productos/no-img.png" : p.ImagenUrl)"
+                                 class="img-fluid rounded"
+                                 style="max-height:110px; object-fit:cover;"
+                                 alt="@p.Nombre" />
+                        </div>
+
+                        <!-- NOMBRE + SKU -->
+                        <div class="col-md-3">
+                            <h5 class="mb-1">@p.Nombre</h5>
+                            <small class="text-muted">Codigo Producto: @p.SKU</small>
+                        </div>
+
+                        <!-- MARCA + CATEGORIA -->
+                        <div class="col-md-3">
+                            <strong>@p.Marca?.Nombre</strong><br />
+                            <span class="text-muted">@p.Categoria?.Nombre</span>
+                        </div>
+
+                        <!-- STOCK -->
+                        <div class="col-md-1 text-center">
+                            <span class="badge @(p.Stock <= 5 ? "bg-danger" : "bg-success")">@p.Stock</span>
+                        </div>
+
+                        <!-- ESTADO -->
+                        <div class="col-md-1 text-center">
+                            <span class="badge @(p.Activo ? "bg-primary" : "bg-secondary")">
+                                @(p.Activo ? "Activo" : "Inactivo")
+                            </span>
+                        </div>
+
+                        <!-- ACCIONES -->
+                        <div class="col-md-2">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a asp-action="Edit"
+                                   asp-route-id="@p.IdProducto"
+                                   class="btn btn-warning btn-sm">Editar</a>
+
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal"
+                                        data-id="@p.IdProducto"
+                                        data-nombre="@p.Nombre">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- PAGINACION -->
+        @if (totalPaginas > 1)
+        {
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+
+                    <li class="page-item @(pagina == 1 ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="PanelproductoAdmin"
+                           asp-route-pagina="@(pagina - 1)"
+                           asp-route-buscar="@buscar"
+                           asp-route-marcaId="@marcaId"
+                           asp-route-categoriaId="@categoriaId">Anterior</a>
+                    </li>
+
+                    @for (int i = 1; i <= totalPaginas; i++)
+                    {
+                        <li class="page-item @(i == pagina ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="PanelproductoAdmin"
+                               asp-route-pagina="@i"
+                               asp-route-buscar="@buscar"
+                               asp-route-marcaId="@marcaId"
+                               asp-route-categoriaId="@categoriaId">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(pagina == totalPaginas ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="PanelproductoAdmin"
+                           asp-route-pagina="@(pagina + 1)"
+                           asp-route-buscar="@buscar"
+                           asp-route-marcaId="@marcaId"
+                           asp-route-categoriaId="@categoriaId">Siguiente</a>
+                    </li>
+
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                ¿Deseas eliminar el producto <strong id="productoNombre"></strong>?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteId" name="id" />
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const aviso = document.getElementById('toastAviso');
+        if (aviso) {
+            setTimeout(function () {
+                aviso.style.opacity = '0';
+                setTimeout(function () { aviso.remove(); }, 400);
+            }, 2000);
+        }
+
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            document.getElementById('deleteId').value = button.getAttribute('data-id');
+            document.getElementById('productoNombre').textContent = button.getAttribute('data-nombre');
+        });
+    </script>
+}
